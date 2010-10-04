@@ -172,4 +172,4 @@ class Genesis_Simple_Menus {
 /*
  *  giddyup
  */
-new Genesis_Simple_Menus();
+$gsm_simple_menu = new Genesis_Simple_Menus();
