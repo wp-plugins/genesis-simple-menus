@@ -13,13 +13,13 @@ This plugin allows you to assign WordPress navigation menus to the secondary nav
 
 [The Author](http://ronandandrea.com/)
 
-[Plugin Page](http://www.studiopress.com/plugins)
+[Plugin Page](http://www.studiopress.com/plugins/genesis-simple-menus)
 
 == Installation ==
 
 1. Upload the entire `genesis-simple-menus` folder to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Create any new menus you neeed with the WordPress menus feature
+1. Create any new menus you need with the WordPress menus feature
 1. Choose the menu you want to display by choosing it from the drop-down menu in the post/page or category/tag edit screen.
 
 == Changelog ==
