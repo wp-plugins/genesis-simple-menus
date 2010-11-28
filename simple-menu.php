@@ -3,7 +3,7 @@
 Plugin Name: Genesis Simple Menus
 Plugin URI: http://www.studiopress.com/plugins/simple-menus
 Description: Genesis Simple Menus allows you to select a WordPress menu for secondary navigation on individual posts/pages.
-Version: 0.1
+Version: 0.1.1
 Author: Ron Rennick
 Author URI: http://ronandandrea.com/
 */
@@ -23,7 +23,6 @@ Author URI: http://ronandandrea.com/
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-//@todo: register text domain & create .po file
 //@todo: custom taxonomies
 
 class Genesis_Simple_Menus {
@@ -40,6 +39,8 @@ class Genesis_Simple_Menus {
 	function  __construct() {
 		if( function_exists( 'wp_nav_menu' ) )
 			add_action( 'genesis_init', array( &$this, 'init' ) );
+
+		load_plugin_textdomain( 'genesis-simple-menus' );
 	}
 /*
  * add all our base hooks into WordPress
@@ -48,8 +49,8 @@ class Genesis_Simple_Menus {
 		add_action( 'admin_menu', array( &$this, 'admin_menu' ) );
 		add_action( 'save_post', array( &$this, 'save_post' ) );
 		add_action( 'wp_head', array( &$this, 'wp_head' ) );
-		add_action('category_edit_form', array( &$this, 'term_edit' ), 9, 2);
-		add_action('post_tag_edit_form', array( &$this, 'term_edit' ), 9, 2);
+		add_action( 'category_edit_form', array( &$this, 'term_edit' ), 9, 2 );
+		add_action( 'post_tag_edit_form', array( &$this, 'term_edit' ), 9, 2 );
 	}
 /*
  * Add the post metaboxes to the supported post types
@@ -64,8 +65,8 @@ class Genesis_Simple_Menus {
  * Does the metabox on the post edit page
  */
 	function metabox() {
-?>	<input type="hidden" name="<?php echo $this->nonce_key; ?>" value="<?php echo wp_create_nonce( $this->handle ); ?>" />
-	<p>
+		$this->print_nonce();
+?>	<p>
 <?php		$this->print_menu_select( $this->field_name, genesis_get_custom_field( $this->field_name ), 'width: 99%;' ); ?>
 	</p>
 <?php	}
@@ -107,8 +108,7 @@ class Genesis_Simple_Menus {
  * Handles the post save & stores the menu selection in the post meta
  */
 	function save_post( $post_id ) {
-		//	verify the nonce
-		if ( !isset($_POST[$this->nonce_key]) || !wp_verify_nonce( $_POST[$this->nonce_key], $this->handle ) )
+		if ( !$this->verify_nonce() )
 			return $post_id;
 
 		//	don't try to save the data under autosave, ajax, or future post.
@@ -125,6 +125,12 @@ class Genesis_Simple_Menus {
 				update_post_meta( $post_id, $this->field_name, $_POST[$this->field_name] );
 		}
 		return $post_id;
+	}
+	function print_nonce() { ?>
+		<input type="hidden" name="<?php echo $this->nonce_key; ?>" value="<?php echo wp_create_nonce( $this->handle ); ?>" />
+<?php	}
+	function verify_nonce() {
+		return ( !isset($_POST[$this->nonce_key]) || !wp_verify_nonce( $_POST[$this->nonce_key], $this->handle ) );
 	}
 /*
  * Once we hit wp_head, the WordPress query has been run, so we can determine if this request uses a custom subnav
