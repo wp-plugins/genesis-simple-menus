@@ -3,7 +3,7 @@
 Plugin Name: Genesis Simple Menus
 Plugin URI: http://www.studiopress.com/plugins/simple-menus
 Description: Genesis Simple Menus allows you to select a WordPress menu for secondary navigation on individual posts/pages.
-Version: 0.1.2
+Version: 0.1.3
 Author: Ron Rennick
 Author URI: http://ronandandrea.com/
 */
@@ -23,13 +23,21 @@ Author URI: http://ronandandrea.com/
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-//@todo: custom taxonomies
 
+/* Sample implementation of adding support for custom taxonomy
+
+add_filter( 'genesis_simple_menus_taxonomies', 'gsm_sample_taxonomy' );
+function gsm_sample_taxonomy( $taxonomies ) {
+	$taxonomies[] = 'taxonomy-slug';
+	return array_unique( $taxonomies );
+}
+*/
 class Genesis_Simple_Menus {
 	var $handle = 'gsm-post-metabox';
 	var $nonce_key = 'gsm-post-metabox-nonce';
 	var $field_name = '_gsm_menu';
 	var $menu = null;
+	var $taxonomies=null;
 /*
  * constructors - hook into Genesis if this is WP 3.0 or greater
  */
@@ -49,8 +57,12 @@ class Genesis_Simple_Menus {
 		add_action( 'admin_menu', array( &$this, 'admin_menu' ) );
 		add_action( 'save_post', array( &$this, 'save_post' ) );
 		add_action( 'wp_head', array( &$this, 'wp_head' ) );
-		add_action( 'category_edit_form', array( &$this, 'term_edit' ), 9, 2 );
-		add_action( 'post_tag_edit_form', array( &$this, 'term_edit' ), 9, 2 );
+		
+		$this->taxonomies = apply_filters( 'genesis_simple_menus_taxonomies', array( 'category', 'post_tag' ) );
+		if( !empty( $this->taxonomies ) && is_array( $this->taxonomies ) ) {
+			foreach( $this->taxonomies as $tax )
+				add_action( "{$tax}_edit_form", array( &$this, 'term_edit' ), 9, 2 );
+		}
 	}
 /*
  * Add the post metaboxes to the supported post types
@@ -136,18 +148,27 @@ class Genesis_Simple_Menus {
  * Once we hit wp_head, the WordPress query has been run, so we can determine if this request uses a custom subnav
  */
 	function wp_head() {
-		global $wp_query;
 		$term = false;
 
 		if( is_singular() ) {
-			$obj = $wp_query->get_queried_object();
+			$obj = get_queried_object();
 			$this->menu = get_post_meta( $obj->ID, $this->field_name, true );
 		}
-		elseif( is_category() )
-			$term = get_term( get_query_var('cat'), 'category' );
-		elseif( is_tag() )
-			$term = get_term( get_query_var('tag_id'), 'post_tag' );
-
+		elseif( is_category() && in_array( 'category', $this->taxonomies ) )
+			$term = get_term( get_query_var( 'cat' ), 'category' );
+		elseif( is_tag() && in_array( 'post_tag', $this->taxonomies ) )
+			$term = get_term( get_query_var( 'tag_id' ), 'post_tag' );
+		elseif( is_tax() ) {
+			foreach( $this->taxonomies as $tax ) {
+				if( $tax == 'post_tag' || $tax == 'category' )
+					continue;
+				if( is_tax( $tax ) ) {
+					$obj = get_queried_object();
+					$term = get_term( $obj->term_id, $tax );
+					break;
+				}
+			}
+		}
 		if( $term && isset( $term->meta[$this->field_name] ) )
 			$this->menu = $term->meta[$this->field_name];
 

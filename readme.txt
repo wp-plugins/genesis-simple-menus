@@ -5,7 +5,7 @@ Requires at least: 3.0
 Tested up to: 3.1
 Stable tag: trunk
 
-With Genesis, Simple Menus allows you to select a WP menu for secondary navigation on individual posts, pages, categories & tags.
+With Genesis, Simple Menus allows you to select a WP menu for secondary navigation on posts, pages, categories, tags or custom taxonomies.
 
 == Description ==
 
@@ -23,6 +23,9 @@ This plugin allows you to assign WordPress navigation menus to the secondary nav
 1. Choose the menu you want to display by choosing it from the drop-down menu in the post/page or category/tag edit screen.
 
 == Changelog ==
+
+= 0.1.3 =
+* add custom taxonomy support
 
 = 0.1.2 =
 * fix verify nonce logic
