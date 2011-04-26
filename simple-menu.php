@@ -3,7 +3,7 @@
 Plugin Name: Genesis Simple Menus
 Plugin URI: http://www.studiopress.com/plugins/simple-menus
 Description: Genesis Simple Menus allows you to select a WordPress menu for secondary navigation on individual posts/pages.
-Version: 0.1.3
+Version: 0.1.3.1
 Author: Ron Rennick
 Author URI: http://ronandandrea.com/
 */
@@ -46,7 +46,7 @@ class Genesis_Simple_Menus {
 	}
 	function  __construct() {
 		if( function_exists( 'wp_nav_menu' ) )
-			add_action( 'genesis_init', array( &$this, 'init' ) );
+			add_action( 'genesis_init', array( &$this, 'init' ), 11 );
 
 		load_plugin_textdomain( 'genesis-simple-menus' );
 	}

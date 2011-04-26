@@ -24,6 +24,9 @@ This plugin allows you to assign WordPress navigation menus to the secondary nav
 
 == Changelog ==
 
+= 0.1.3.1 =
+* update for Genesis 1.6
+
 = 0.1.3 =
 * add custom taxonomy support
 
