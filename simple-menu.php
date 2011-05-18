@@ -48,7 +48,7 @@ class Genesis_Simple_Menus {
 		if( function_exists( 'wp_nav_menu' ) )
 			add_action( 'genesis_init', array( &$this, 'init' ), 11 );
 
-		load_plugin_textdomain( 'genesis-simple-menus' );
+        	load_plugin_textdomain( 'genesis-simple-menus', false, 'genesis-simple-menus/languages' );
 	}
 /*
  * add all our base hooks into WordPress
@@ -110,7 +110,7 @@ class Genesis_Simple_Menus {
 		<label for="<?php echo $fieldname; ?>"><span><?php _e( 'Secondary Navigation', 'genesis' ); ?><span></label>
 <?php		echo $after_label; ?>
 		<select name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>"<?php echo $select_style; ?>>
-			<option value=""<?php echo $option_style; ?>><?php _e( 'Genesis Default', 'gsm' ); ?></option>
+			<option value=""<?php echo $option_style; ?>><?php _e( 'Genesis Default', 'genesis-simple-menus' ); ?></option>
 <?php		$menus = wp_get_nav_menus( array('orderby' => 'name') );
 		foreach ( $menus as $menu )
 			printf( '<option value="%d" %s>%s</option>', $menu->term_id, selected( $menu->term_id, $selected, false ), esc_html( $menu->name ) );
