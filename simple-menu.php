@@ -3,7 +3,7 @@
 Plugin Name: Genesis Simple Menus
 Plugin URI: http://www.studiopress.com/plugins/simple-menus
 Description: Genesis Simple Menus allows you to select a WordPress menu for secondary navigation on individual posts/pages.
-Version: 0.1.3.2
+Version: 0.1.4
 Author: Ron Rennick
 Author URI: http://ronandandrea.com/
 */
@@ -55,11 +55,11 @@ class Genesis_Simple_Menus {
  */
 	function init() {
 		add_action( 'admin_menu', array( &$this, 'admin_menu' ) );
-		add_action( 'save_post', array( &$this, 'save_post' ) );
+		add_action( 'save_post', array( &$this, 'save_post' ), 10, 2 );
 		add_action( 'wp_head', array( &$this, 'wp_head' ) );
 		
 		$this->taxonomies = apply_filters( 'genesis_simple_menus_taxonomies', array( 'category', 'post_tag' ) );
-		if( !empty( $this->taxonomies ) && is_array( $this->taxonomies ) ) {
+		if( !empty( $this->taxonomies ) && is_admin() && is_array( $this->taxonomies ) ) {
 			foreach( $this->taxonomies as $tax )
 				add_action( "{$tax}_edit_form", array( &$this, 'term_edit' ), 9, 2 );
 		}
@@ -119,7 +119,7 @@ class Genesis_Simple_Menus {
 /*
  * Handles the post save & stores the menu selection in the post meta
  */
-	function save_post( $post_id ) {
+	function save_post( $post_id, $post ) {
 		if ( !$this->verify_nonce() )
 			return $post_id;
 
@@ -127,7 +127,7 @@ class Genesis_Simple_Menus {
 		if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return;
 		if ( defined('DOING_AJAX') && DOING_AJAX ) return;
 		if ( defined('DOING_CRON') && DOING_CRON ) return;
-		if ( $post->post_type == 'revision' ) return;
+		if ( $post->post_type == 'revision' || $post->post_type == 'nav_menu_item' ) return;
 
 		$perm = 'edit_' . ( 'page' == $_POST['post_type'] ? 'post' : $_POST['post_type'] );
 		if ( current_user_can( $perm, $post_id ) ) {
