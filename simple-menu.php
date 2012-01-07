@@ -58,8 +58,9 @@ class Genesis_Simple_Menus {
 		add_action( 'save_post', array( &$this, 'save_post' ), 10, 2 );
 		add_action( 'wp_head', array( &$this, 'wp_head' ) );
 		
-		$this->taxonomies = apply_filters( 'genesis_simple_menus_taxonomies', array( 'category', 'post_tag' ) );
-		if( !empty( $this->taxonomies ) && is_admin() && is_array( $this->taxonomies ) ) {
+		$_taxonomies = get_taxonomies( array( 'show_ui' => true, 'public' => true ) );
+		$this->taxonomies = apply_filters( 'genesis_simple_menus_taxonomies', array_keys( $_taxonomies ) );
+		if( !empty( $this->taxonomies ) && is_array( $this->taxonomies ) ) {
 			foreach( $this->taxonomies as $tax )
 				add_action( "{$tax}_edit_form", array( &$this, 'term_edit' ), 9, 2 );
 		}
@@ -77,7 +78,6 @@ class Genesis_Simple_Menus {
  * Does the metabox on the post edit page
  */
 	function metabox() {
-		$this->print_nonce();
 ?>	<p>
 <?php		$this->print_menu_select( $this->field_name, genesis_get_custom_field( $this->field_name ), 'width: 99%;' ); ?>
 	</p>
@@ -107,7 +107,7 @@ class Genesis_Simple_Menus {
 		if( $option_style )
 			$option_style = sprintf(' style="%s"', esc_attr( $option_style ) );
 ?>
-		<label for="<?php echo $fieldname; ?>"><span><?php _e( 'Secondary Navigation', 'genesis' ); ?><span></label>
+		<label for="<?php echo $field_name; ?>"><span><?php _e( 'Secondary Navigation', 'genesis' ); ?><span></label>
 <?php		echo $after_label; ?>
 		<select name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>"<?php echo $select_style; ?>>
 			<option value=""<?php echo $option_style; ?>><?php _e( 'Genesis Default', 'genesis-simple-menus' ); ?></option>
@@ -120,29 +120,21 @@ class Genesis_Simple_Menus {
  * Handles the post save & stores the menu selection in the post meta
  */
 	function save_post( $post_id, $post ) {
-		if ( !$this->verify_nonce() )
-			return $post_id;
 
 		//	don't try to save the data under autosave, ajax, or future post.
 		if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return;
 		if ( defined('DOING_AJAX') && DOING_AJAX ) return;
 		if ( defined('DOING_CRON') && DOING_CRON ) return;
-		if ( $post->post_type == 'revision' || $post->post_type == 'nav_menu_item' ) return;
+		if ( $post->post_type == 'revision' ) return;
 
-		$perm = 'edit_' . ( 'page' == $_POST['post_type'] ? 'post' : $_POST['post_type'] );
+		$perm = 'edit_' . ( 'page' == $post->post_type ? 'post' : $post->post_type ) . 's';
 		if ( current_user_can( $perm, $post_id ) ) {
 			if( empty( $_POST[$this->field_name] ) )
 				delete_post_meta( $post_id, $this->field_name );
 			else
 				update_post_meta( $post_id, $this->field_name, $_POST[$this->field_name] );
 		}
-		return $post_id;
-	}
-	function print_nonce() { ?>
-		<input type="hidden" name="<?php echo $this->nonce_key; ?>" value="<?php echo wp_create_nonce( $this->handle ); ?>" />
-<?php	}
-	function verify_nonce() {
-		return ( !isset($_POST[$this->nonce_key]) || wp_verify_nonce( $_POST[$this->nonce_key], $this->handle ) );
+
 	}
 /*
  * Once we hit wp_head, the WordPress query has been run, so we can determine if this request uses a custom subnav
@@ -171,7 +163,6 @@ class Genesis_Simple_Menus {
 		}
 		if( $term && isset( $term->meta[$this->field_name] ) )
 			$this->menu = $term->meta[$this->field_name];
-
 		if( $this->menu ) {
 			add_filter( 'genesis_pre_get_option_subnav_type', array( &$this, 'pre_get_option_subnav_type' ) );
 			add_filter( 'theme_mod_nav_menu_locations', array( &$this, 'theme_mod' ) );
@@ -191,7 +182,7 @@ class Genesis_Simple_Menus {
  */
 	function theme_mod( $mods ) {
 		if( $this->menu )
-			$mods['secondary'] = $this->menu;
+			$mods['secondary'] = (int)$this->menu;
 
 		return $mods;
 	}
