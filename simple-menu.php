@@ -45,8 +45,7 @@ class Genesis_Simple_Menus {
 		return $this->__construct();
 	}
 	function  __construct() {
-		if( function_exists( 'wp_nav_menu' ) )
-			add_action( 'genesis_init', array( &$this, 'init' ), 11 );
+		add_action( 'init', array( $this, 'init' ), 99 );
 
         	load_plugin_textdomain( 'genesis-simple-menus', false, 'genesis-simple-menus/languages' );
 	}
@@ -54,15 +53,19 @@ class Genesis_Simple_Menus {
  * add all our base hooks into WordPress
  */
 	function init() {
-		add_action( 'admin_menu', array( &$this, 'admin_menu' ) );
-		add_action( 'save_post', array( &$this, 'save_post' ), 10, 2 );
-		add_action( 'wp_head', array( &$this, 'wp_head' ) );
+		if( !function_exists( 'genesis_get_option' ) )
+			return;
+
+		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+		add_action( 'save_post', array( $this, 'save_post' ), 10, 2 );
+		add_action( 'wp_head', array( $this, 'wp_head' ) );
 		
 		$_taxonomies = get_taxonomies( array( 'show_ui' => true, 'public' => true ) );
 		$this->taxonomies = apply_filters( 'genesis_simple_menus_taxonomies', array_keys( $_taxonomies ) );
+
 		if( !empty( $this->taxonomies ) && is_array( $this->taxonomies ) ) {
 			foreach( $this->taxonomies as $tax )
-				add_action( "{$tax}_edit_form", array( &$this, 'term_edit' ), 9, 2 );
+				add_action( "{$tax}_edit_form", array( $this, 'term_edit' ), 9, 2 );
 		}
 	}
 /*
